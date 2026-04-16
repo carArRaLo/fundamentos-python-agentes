@@ -13,9 +13,9 @@ class PseudoAgente:
     # self.tokens y self.historial_chat son accesibles desde cualquier método de la clase en cualquier momento.
     # Una variable local (sin self.) solo existe mientras se ejecuta la función donde fue creada
     # y desaparece al terminar, sin dejar rastro en el objeto ni en ningún otro lugar del programa.
-    def __init__(self, nombre: str):
+    def __init__(self, nombre: str, energia: int = 100):
         self.nombre = nombre
-        self.tokens = 100
+        self.tokens = energia  # energia inicial: 100 por defecto o el valor cargado desde la BD
         self.historial_chat: MemoriaAgente = []
 
     def ping(self) -> str:
@@ -97,6 +97,18 @@ class PseudoAgente:
         numero = random.randint(1, 6)
         return f"El dado cayó en: {numero}"
 
+    def usar_energia(self, cantidad: int) -> str:
+        """Descuenta energia_requerida de los tokens del agente. La clase controla la lógica."""
+        if self.tokens < cantidad:
+            raise ValueError(
+                f"[{self.nombre}] Energía insuficiente: tiene {self.tokens}, necesita {cantidad}."
+            )
+        self.tokens -= cantidad
+        return (
+            f"[{self.nombre}] Misión ejecutada. Energía consumida: {cantidad}. "
+            f"Energía restante: {self.tokens}."
+        )
+
     def registrar_log(self, cmd: list, mensaje: str, rol: str):
         d_log = {
             "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -112,8 +124,8 @@ class PseudoAgente:
 # correcciones), AgenteAdmin hereda esas mejoras de forma automática y solo redefinimos lo que
 # realmente necesita ser diferente, manteniendo el código limpio y fácil de mantener.
 class AgenteAdmin(PseudoAgente):
-    def __init__(self, nombre: str):
-        super().__init__(nombre)
+    def __init__(self, nombre: str, energia: int = 100):
+        super().__init__(nombre, energia)
 
     def gestionar_historial(self, accion: str) -> str:
         # El administrador puede consultar el historial sin consumir batería como privilegio de su rol
